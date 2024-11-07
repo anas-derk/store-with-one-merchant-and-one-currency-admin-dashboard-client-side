@@ -39,10 +39,6 @@ export default function UpdateAndDeleteCategories() {
 
     const [totalPagesCount, setTotalPagesCount] = useState(0);
 
-    const [filters, setFilters] = useState({
-        storeId: "",
-    });
-
     const [formValidationErrors, setFormValidationErrors] = useState({});
 
     const router = useRouter();
@@ -60,14 +56,9 @@ export default function UpdateAndDeleteCategories() {
                     } else {
                         const adminDetails = result.data;
                         setAdminInfo(adminDetails);
-                        const tempFilters = { ...filters, storeId: adminDetails.storeId };
-                        setFilters(tempFilters);
-                        const filtersAsQuery = getFiltersAsQuery(tempFilters);
-                        result = await getCategoriesCount(filtersAsQuery);
-                        if (result.data > 0) {
-                            setAllCategoriesInsideThePage((await getAllCategoriesInsideThePage(1, pageSize, filtersAsQuery)).data);
-                            setTotalPagesCount(Math.ceil(result.data / pageSize));
-                        }
+                        result = (await getAllCategoriesInsideThePage(1, pageSize)).data;
+                        setAllCategoriesInsideThePage(result.categories);
+                        setTotalPagesCount(Math.ceil(result.categoriesCount / pageSize));
                         setIsLoadingPage(false);
                     }
                 })
@@ -84,19 +75,12 @@ export default function UpdateAndDeleteCategories() {
         } else router.replace("/login");
     }, []);
 
-    const getFiltersAsQuery = (filters) => {
-        let filteringString = "";
-        if (filters.storeId) filteringString += `storeId=${filters.storeId}&`;
-        if (filteringString) filteringString = filteringString.substring(0, filteringString.length - 1);
-        return filteringString;
-    }
-
     const getPreviousPage = async () => {
         try {
             setIsGetCategories(true);
             setErrorMsgOnGetCategoriesData("");
             const newCurrentPage = currentPage - 1;
-            setAllCategoriesInsideThePage((await getAllCategoriesInsideThePage(newCurrentPage, pageSize)).data);
+            setAllCategoriesInsideThePage((await getAllCategoriesInsideThePage(newCurrentPage, pageSize)).data.categories);
             setCurrentPage(newCurrentPage);
             setIsGetCategories(false);
         }
@@ -116,7 +100,7 @@ export default function UpdateAndDeleteCategories() {
             setIsGetCategories(true);
             setErrorMsgOnGetCategoriesData("");
             const newCurrentPage = currentPage + 1;
-            setAllCategoriesInsideThePage((await getAllCategoriesInsideThePage(newCurrentPage, pageSize)).data);
+            setAllCategoriesInsideThePage((await getAllCategoriesInsideThePage(newCurrentPage, pageSize)).data.categories);
             setCurrentPage(newCurrentPage);
             setIsGetCategories(false);
         }
@@ -135,7 +119,7 @@ export default function UpdateAndDeleteCategories() {
         try {
             setIsGetCategories(true);
             setErrorMsgOnGetCategoriesData("");
-            setAllCategoriesInsideThePage((await getAllCategoriesInsideThePage(pageNumber, pageSize)).data);
+            setAllCategoriesInsideThePage((await getAllCategoriesInsideThePage(pageNumber, pageSize)).data.categories);
             setCurrentPage(pageNumber);
             setIsGetCategories(false);
         }
