@@ -68,7 +68,7 @@ export default function UpdateAndDeleteProducts() {
 
     const pageSize = 10;
 
-    const countryList = Object.keys(countries);
+    const allCountries = Object.keys(countries);
 
     useEffect(() => {
         const adminToken = localStorage.getItem(process.env.adminTokenNameInLocalStorage);
@@ -114,7 +114,13 @@ export default function UpdateAndDeleteProducts() {
             setIsGetProducts(true);
             setErrorMsgOnGetProductsData("");
             const newCurrentPage = currentPage - 1;
-            setAllProductsInsideThePage((await getAllProductsInsideThePage(newCurrentPage, pageSize, getFiltersAsString(filters))).data.products);
+            const tempAllProductsInsideThePage = (await getAllProductsInsideThePage(newCurrentPage, pageSize, getFiltersAsString(filters))).data.products
+            tempAllProductsInsideThePage.forEach((product) => {
+                const filteredCountryListForProduct = allCountries.filter((country) => !product.countries.includes(country));
+                product.filteredCountryList = filteredCountryListForProduct;
+                product.allCountriesWithoutOriginalCountries = filteredCountryListForProduct;
+            });
+            setAllProductsInsideThePage(tempAllProductsInsideThePage);
             setCurrentPage(newCurrentPage);
             setIsGetProducts(false);
         }
@@ -134,7 +140,12 @@ export default function UpdateAndDeleteProducts() {
             setIsGetProducts(true);
             setErrorMsgOnGetProductsData("");
             const newCurrentPage = currentPage + 1;
-            setAllProductsInsideThePage((await getAllProductsInsideThePage(newCurrentPage, pageSize, getFiltersAsString(filters))).data.products);
+            const tempAllProductsInsideThePage = (await getAllProductsInsideThePage(newCurrentPage, pageSize, getFiltersAsString(filters))).data.products
+            tempAllProductsInsideThePage.forEach((product) => {
+                const filteredCountryListForProduct = allCountries.filter((country) => !product.countries.includes(country));
+                product.filteredCountryList = filteredCountryListForProduct;
+                product.allCountriesWithoutOriginalCountries = filteredCountryListForProduct;
+            });
             setCurrentPage(newCurrentPage);
             setIsGetProducts(false);
         }
@@ -153,7 +164,13 @@ export default function UpdateAndDeleteProducts() {
         try {
             setIsGetProducts(true);
             setErrorMsgOnGetProductsData("");
-            setAllProductsInsideThePage((await getAllProductsInsideThePage(pageNumber, pageSize, getFiltersAsString(filters))).data.products);
+            const tempAllProductsInsideThePage = (await getAllProductsInsideThePage(pageNumber, pageSize, getFilteringString(filters))).data.products
+            tempAllProductsInsideThePage.forEach((product) => {
+                const filteredCountryListForProduct = allCountries.filter((country) => !product.countries.includes(country));
+                product.filteredCountryList = filteredCountryListForProduct;
+                product.allCountriesWithoutOriginalCountries = filteredCountryListForProduct;
+            });
+            setAllProductsInsideThePage(tempAllProductsInsideThePage);
             setCurrentPage(pageNumber);
             setIsGetProducts(false);
         }
@@ -576,7 +593,7 @@ export default function UpdateAndDeleteProducts() {
                                                     onChange={(e) => changeProductData(productIndex, "country", e.target.value)}
                                                 >
                                                     <option defaultValue="" hidden>Please Select Country</option>
-                                                    {countryList.map((countryCode) => (
+                                                    {allCountries.map((countryCode) => (
                                                         <option value={countryCode} key={countryCode}>{countries[countryCode].name}</option>
                                                     ))}
                                                 </select>
